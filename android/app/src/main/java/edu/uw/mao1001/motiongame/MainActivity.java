@@ -1,5 +1,6 @@
 package edu.uw.mao1001.motiongame;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,7 +14,7 @@ import android.widget.TextView;
 
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends Activity implements SensorEventListener {
 
     private static final String TAG = "Motion";
 
@@ -22,15 +23,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager mSensorManager;
     private Sensor mSensor;
 
+    private DrawingSurfaceView view;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //views for easy access
-        txtX = (TextView)findViewById(R.id.txt_x);
-        txtY = (TextView)findViewById(R.id.txt_y);
-        txtZ = (TextView)findViewById(R.id.txt_z);
+        view = (DrawingSurfaceView)findViewById(R.id.drawingView);
+
+//        //views for easy access
+//        txtX = (TextView)findViewById(R.id.txt_x);
+//        txtY = (TextView)findViewById(R.id.txt_y);
+//        txtZ = (TextView)findViewById(R.id.txt_z);
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
@@ -71,9 +77,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float[] orientation = new float[3];
         SensorManager.getOrientation(rotationMatrix, orientation);
 
-        txtX.setText(String.format("%.3f",Math.toDegrees(orientation[1]))+"\u00B0");
-        txtY.setText(String.format("%.3f",Math.toDegrees(orientation[2]))+"\u00B0");
-        txtZ.setText(String.format("%.3f",Math.toDegrees(orientation[0]))+"\u00B0");
+//        txtX.setText(String.format("%.3f",Math.toDegrees(orientation[1]))+"\u00B0");
+//        txtY.setText(String.format("%.3f",Math.toDegrees(orientation[2]))+"\u00B0");
+//        txtZ.setText(String.format("%.3f",Math.toDegrees(orientation[0]))+"\u00B0");
     }
 
     @Override
