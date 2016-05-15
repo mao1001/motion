@@ -65,7 +65,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
+        //Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
 
 //        txtX.setText(String.format("%.3f",event.values[0]));
 //        txtY.setText(String.format("%.3f",event.values[1]));
