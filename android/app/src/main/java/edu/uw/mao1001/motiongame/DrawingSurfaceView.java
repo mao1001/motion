@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.Window;
 import android.view.WindowManager;
 
 import java.util.HashMap;
@@ -24,15 +23,12 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
     private static final String TAG = "SurfaceView";
     private static final int PANEL_COUNT = 3;
 
+    public HashMap<Integer, Panel> panels;
+    public boolean gameFinished;
+
     private SurfaceHolder mHolder;
     private Thread mThread;
     private DrawingRunnable mRunnable;
-
-    public boolean gameFinished;
-
-    public HashMap<Integer, Panel> panels;
-
-
     private Point screenSize;
 
     private Paint panelPaint;
@@ -41,10 +37,16 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
     private Paint textPaint;
     private Paint textDisabledPaint;
 
+    //-----------------------------//
+    //   C O N S T R U C T O R S   //
+    //-----------------------------//
+
+    //Required
     public DrawingSurfaceView(Context context) {
         this(context, null);
     }
 
+    //Required
     public DrawingSurfaceView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
@@ -57,13 +59,13 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
         mRunnable = new DrawingRunnable();
 
-//
+        //Gets the size of the screen in order to draw everything appropriately
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         screenSize = new Point();
         display.getSize(screenSize);
 
-
+        //Make all of the paints!!
         panelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         panelPaint.setColor(Color.RED);
         panelPaint.setStyle(Paint.Style.FILL);
@@ -86,8 +88,8 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         textDisabledPaint.setTextSize(50);
         textDisabledPaint.setTextAlign(Paint.Align.CENTER);
 
+        //Create the different display panels.
         panels = new HashMap<>();
-
         int width = screenSize.x;
         int height = screenSize.y;
         for (int i = 0; i < PANEL_COUNT; i++) {
@@ -101,6 +103,11 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
             panels.put(i, temp);
         }
     }
+
+    //-----------------------//
+    //   O V E R R I D E S   //
+    //-----------------------//
+    //SurfaceHolder.Callback
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -131,17 +138,22 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         Log.d(TAG, "Drawing thread shut down");
     }
 
+    //---------------------------------//
+    //   P U B L I C   M E T H O D S   //
+    //---------------------------------//
+
+    /**
+     * Helper method to draw on the screen.
+     * @param canvas
+     */
     public synchronized void render(Canvas canvas) {
         if (canvas == null) return;
-
         canvas.drawColor(Color.rgb(51,10,111)); //purple out the background
 
-        //
-        // Log.d(TAG, "About to draw thing");
-
-
+        //Draw the panels
         for (int i = 0; i < PANEL_COUNT; i++) {
             Panel panel = panels.get(i);
+            //If the panel is turned on
             if (panel.enabled) {
                 if (panel.isMatched()) {
                     canvas.drawRect(panel.canvas, panelCompletePaint);
@@ -159,6 +171,7 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
             }
         }
 
+        //If the game is finished than draw the restart overlay prompt
         if (gameFinished) {
             Paint finishedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             finishedPaint.setColor(Color.BLACK);
@@ -169,6 +182,9 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         }
     }
 
+    //-------------------------//
+    //   I N N E R C L A S S   //
+    //-------------------------//
     /**
      * An inner class representing a runnable that does the drawing. Animation timing could go in here.
      * http://obviam.net/index.php/the-android-game-loop/ has some nice details about using timers to specify animation

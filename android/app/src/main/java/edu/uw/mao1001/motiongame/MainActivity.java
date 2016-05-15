@@ -23,8 +23,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     private static final String TAG = "Motion";
 
-    private TextView txtX, txtY, txtZ;
-
     private SensorManager mSensorManager;
     private Sensor mSensor;
 
@@ -33,11 +31,14 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     private static final int PANEL_COUNT = 3;
 
-
     private int xTarget;
     private int yTarget;
     private int zTarget;
 
+    //-----------------------//
+    //   O V E R R I D E S   //
+    //-----------------------//
+    //Activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +60,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         for(Sensor s : mSensorManager.getSensorList(Sensor.TYPE_ALL))
             Log.i(TAG, s.toString());
 
-        generateRandom();
-
+        generateRandomOrientation();
 
         if(mSensor == null) { //we don't have a relevant sensor
             Log.v(TAG, "No sensor");
@@ -82,6 +82,36 @@ public class MainActivity extends Activity implements SensorEventListener {
         super.onPause();
     }
 
+    //-----------------------------------//
+    //   P R I V A T E   M E T H O D S   //
+    //-----------------------------------//
+
+    /**
+     * Restarts the game.
+     */
+    private void restart() {
+        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        generateRandomOrientation();
+        view.gameFinished = false;
+    }
+
+    /**
+     * Generates random orientations along the x y and z axis.
+     */
+    private void generateRandomOrientation() {
+        Random rand = new Random();
+
+        zTarget = view.panels.get(0).target = rand.nextInt(180);
+        xTarget = view.panels.get(1).target = rand.nextInt(90);
+        yTarget = view.panels.get(2).target = rand.nextInt(180);
+        Log.v(TAG, "New targets: " + xTarget + "   " + yTarget + "   " + zTarget);
+    }
+
+    //-----------------------//
+    //   O V E R R I D E S   //
+    //-----------------------//
+    //SensorEventListener
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
@@ -100,7 +130,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             Panel temp = view.panels.get(i);
             temp.rotationDegree = Math.toDegrees(orientation[i]);
             if (temp.isMatched() && temp.enabled) {
-                //Log.d("TAG", "Matched! Target: " + temp.target + " Current: " + temp.rotationDegree);
+                //Log.v("TAG", "Matched! Target: " + temp.target + " Current: " + temp.rotationDegree);
                 count++;
             } else if (!temp.enabled) {
                 required--;
@@ -113,27 +143,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
     }
 
-    public void restart() {
-        Log.d(TAG, "Telling surface to restart");
-        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        generateRandom();
-        view.gameFinished = false;
-    }
-
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        //leave blank for now
-    }
-
-    public void generateRandom() {
-        Random rand = new Random();
-
-        zTarget = view.panels.get(0).target = rand.nextInt(180);
-        xTarget = view.panels.get(1).target = rand.nextInt(90);
-        yTarget = view.panels.get(2).target = rand.nextInt(180);
-        Log.d(TAG, "Random generated stuff: " + xTarget + "   " + yTarget + "   " + zTarget);
-    }
-
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -141,6 +152,13 @@ public class MainActivity extends Activity implements SensorEventListener {
         return true;
     }
 
+    //-------------------------//
+    //   I N N E R C L A S S   //
+    //-------------------------//
+
+    /**
+     * Private helper class to handle gestures!
+     */
     private class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         @Override
@@ -155,19 +173,14 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-
+            Log.v(TAG, "Fling! "+ e1.getX() + ", " + e1.getY());
             //fling!
-
             for (int i = 0; i < PANEL_COUNT; i++) {
                 Panel temp = view.panels.get(i);
                 if (temp.canvas.contains(Math.round(e1.getX()), Math.round(e1.getY()))) {
-                    Log.v(TAG, "Location is in box #" + (i + 1));
                     temp.enabled = !temp.enabled;
                 }
             }
-
-            Log.v(TAG, "Fling! "+ e1.getX() + ", " + e1.getY());
-
             return true; //we got this
         }
     }
