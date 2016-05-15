@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MotionGame</string>
+
+    <string name="status_disabled">Disabled. Swipe to enable</string>
 </resources>

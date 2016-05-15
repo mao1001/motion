@@ -11,12 +11,14 @@ public class Panel {
     public String text;
     public double rotationDegree;
     public int target;
+    public boolean enabled;
 
     public Panel(Rect canvas) {
         this.canvas = canvas;
         this.text = "Temp";
         this.target = 180;
         this.rotationDegree = 0.0;
+        this.enabled = true;
     }
 
     public String getDegreesInString() {

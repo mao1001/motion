@@ -33,8 +33,9 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
     private Paint panelPaint;
     private Paint panelCompletePaint;
+    private Paint panelDisabledPaint;
     private Paint textPaint;
-
+    private Paint textDisabledPaint;
 
     public DrawingSurfaceView(Context context) {
         this(context, null);
@@ -66,10 +67,19 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         panelCompletePaint.setColor(Color.GREEN);
         panelPaint.setStyle(Paint.Style.FILL);
 
+        panelDisabledPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelCompletePaint.setColor(Color.GRAY);
+        panelCompletePaint.setStyle(Paint.Style.FILL);
+
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(100);
         textPaint.setTextAlign(Paint.Align.CENTER);
+
+        textDisabledPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textDisabledPaint.setColor(Color.WHITE);
+        textDisabledPaint.setTextSize(50);
+        textDisabledPaint.setTextAlign(Paint.Align.CENTER);
 
         panels = new HashMap<>();
 
@@ -130,16 +140,23 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
         //Log.d(TAG, "About to draw thing");
 
-        for (Panel panel : panels.values()) {
-            if (panel.isMatched()) {
-                canvas.drawRect(panel.canvas, panelCompletePaint);
+        for (int i = 0; i < 3; i++) {
+            Panel panel = panels.get(i);
+            if (panel.enabled) {
+                if (panel.isMatched()) {
+                    canvas.drawRect(panel.canvas, panelCompletePaint);
 
+                } else {
+                    canvas.drawRect(panel.canvas, panelPaint);
+                }
+
+                canvas.drawText(panel.target + " or " + -panel.target, panel.canvas.exactCenterX(), panel.canvas.exactCenterY() - 70, textPaint);
+                canvas.drawText(panel.getDegreesInString(), panel.canvas.exactCenterX(), panel.canvas.exactCenterY() + 70, textPaint);
             } else {
-                canvas.drawRect(panel.canvas, panelPaint);
-            }
+                canvas.drawRect(panel.canvas, panelDisabledPaint);
+                canvas.drawText(getContext().getString(R.string.status_disabled), panel.canvas.exactCenterX(), panel.canvas.exactCenterY(), textDisabledPaint);
 
-            canvas.drawText(panel.target + " or " + -panel.target, panel.canvas.exactCenterX(), panel.canvas.exactCenterY() - 70, textPaint);
-            canvas.drawText(panel.getDegreesInString(), panel.canvas.exactCenterX(), panel.canvas.exactCenterY() + 70, textPaint);
+            }
         }
     }
 

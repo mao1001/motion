@@ -7,6 +7,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
+import android.support.v4.view.GestureDetectorCompat;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,6 +29,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     private Sensor mSensor;
 
     private DrawingSurfaceView view;
+    private GestureDetectorCompat mDetector;
+
 
     private int xTarget;
     private int yTarget;
@@ -39,6 +43,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         setContentView(R.layout.activity_main);
 
         view = (DrawingSurfaceView)findViewById(R.id.drawingView);
+        mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
 //        //views for easy access
 //        txtX = (TextView)findViewById(R.id.txt_x);
@@ -97,7 +102,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             Panel temp = view.panels.get(i);
             temp.rotationDegree = Math.toDegrees(orientation[i]);
             if (temp.isMatched()) {
-                Log.d("TAG", "Matched! Target: " + temp.target + " Current: " + temp.rotationDegree);
+                //Log.d("TAG", "Matched! Target: " + temp.target + " Current: " + temp.rotationDegree);
                 count++;
             }
         }
@@ -121,4 +126,67 @@ public class MainActivity extends Activity implements SensorEventListener {
         Log.d(TAG, "Random generated stuff: " + xTarget + "   " + yTarget + "   " + zTarget);
     }
 
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        mDetector.onTouchEvent(event); //detect flings
+
+        float x = event.getX();
+        float y = event.getY();
+
+        //which finger
+        int pointerIndex = MotionEventCompat.getActionIndex(event); //which finger came down
+        int pointerId = MotionEventCompat.getPointerId(event, pointerIndex); //consistent id
+
+        //handle action
+        int action = MotionEventCompat.getActionMasked(event);
+        switch(action) {
+            case MotionEvent.ACTION_DOWN: //put finger down
+                Log.v(TAG,"First finger down!");
+                return true;
+
+            case MotionEvent.ACTION_POINTER_DOWN: //more fingers down
+                Log.v(TAG,"Another finger down!");
+                return true;
+
+            case MotionEvent.ACTION_POINTER_UP:
+                Log.v(TAG,"Finger up!");
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                Log.v(TAG,"Last finger up!");
+                return true;
+            default :
+                return super.onTouchEvent(event);
+        }
+    }
+
+    private class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            Log.v(TAG, "On down");
+
+            return true; //we're processing this event
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+
+            //fling!
+
+            for (int i = 0; i < 3; i++) {
+                Panel temp = view.panels.get(i);
+                if (temp.canvas.contains(Math.round(e1.getX()), Math.round(e1.getY()))) {
+                    Log.v(TAG, "Location is in box #" + (i + 1));
+                    temp.enabled = !temp.enabled;
+                }
+            }
+
+            Log.v(TAG, "Fling! "+ e1.getX() + ", " + e1.getY());
+
+            return true; //we got this
+        }
+    }
 }
