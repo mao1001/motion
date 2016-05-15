@@ -7,11 +7,10 @@ import android.graphics.Rect;
  */
 public class Panel {
     public Rect canvas;
-    public float textX;
-    public float textY;
+    public String text;
 
     public Panel(Rect canvas) {
         this.canvas = canvas;
-        this.textX = canvas.centerX();
+        this.text = "Temp";
     }
 }

@@ -27,11 +27,13 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
     private Thread mThread;
     private DrawingRunnable mRunnable;
 
-    private HashMap<Integer, Rect> panels;
+    public HashMap<Integer, Panel> panels;
 
     private Point screenSize;
 
-    private Paint paint;
+    private Paint panelPaint;
+    private Paint textPaint;
+
 
     public DrawingSurfaceView(Context context) {
         this(context, null);
@@ -55,10 +57,15 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         display.getSize(screenSize);
 
 
-        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.WHITE);
-        paint.setStrokeWidth(3);
-        paint.setStyle(Paint.Style.STROKE);
+        panelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelPaint.setColor(Color.WHITE);
+        panelPaint.setStrokeWidth(3);
+        panelPaint.setStyle(Paint.Style.STROKE);
+
+        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(100);
+        textPaint.setTextAlign(Paint.Align.CENTER);
 
         panels = new HashMap<>();
 
@@ -71,7 +78,9 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
             int bottom = height;
             int right = (width / panelAmount) * (i + 1);
 
-            panels.put(i, new Rect(left, top, right, bottom));
+            Panel temp = new Panel(new Rect(left, top, right, bottom));
+
+            panels.put(i, temp);
         }
 
 
@@ -91,18 +100,36 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        // we have to tell thread to shut down & wait for it to finish, or else
+        // it might touch the Surface after we return and explode
+        mRunnable.setRunning(false); //turn off
+        boolean retry = true;
+        while(retry) {
+            try {
+                mThread.join();
+                retry = false;
+            } catch (InterruptedException e) {
+                //will try again...
+            }
+        }
+        Log.d(TAG, "Drawing thread shut down");
     }
 
     public void update() {
 
     }
 
-    public void render(Canvas canvas) {
+    public synchronized void render(Canvas canvas) {
+        if (canvas == null) return;
+
+        canvas.drawColor(Color.rgb(51,10,111)); //purple out the background
 
         //Log.d(TAG, "About to draw thing");
 
-        for (Rect panel : panels.values()) {
-            canvas.drawRect(panel, paint);
+        for (Panel panel : panels.values()) {
+
+            canvas.drawRect(panel.canvas, panelPaint);
+            canvas.drawText(panel.text, panel.canvas.exactCenterX(), panel.canvas.exactCenterY(), textPaint);
         }
     }
 

@@ -65,7 +65,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
     @Override
     public void onSensorChanged(SensorEvent event) {
-        //Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
+        Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
 
 //        txtX.setText(String.format("%.3f",event.values[0]));
 //        txtY.setText(String.format("%.3f",event.values[1]));
@@ -76,6 +76,10 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         float[] orientation = new float[3];
         SensorManager.getOrientation(rotationMatrix, orientation);
+
+        for (int i = 0; i < 3; i++) {
+            view.panels.get(i).text = String.format("%.3f",Math.toDegrees(orientation[i]))+"\u00B0";
+        }
 
 //        txtX.setText(String.format("%.3f",Math.toDegrees(orientation[1]))+"\u00B0");
 //        txtY.setText(String.format("%.3f",Math.toDegrees(orientation[2]))+"\u00B0");
