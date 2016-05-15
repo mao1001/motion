@@ -32,6 +32,7 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
     private Point screenSize;
 
     private Paint panelPaint;
+    private Paint panelCompletePaint;
     private Paint textPaint;
 
 
@@ -58,9 +59,12 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
 
         panelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        panelPaint.setColor(Color.WHITE);
-        panelPaint.setStrokeWidth(3);
-        panelPaint.setStyle(Paint.Style.STROKE);
+        panelPaint.setColor(Color.RED);
+        panelPaint.setStyle(Paint.Style.FILL);
+
+        panelCompletePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        panelCompletePaint.setColor(Color.GREEN);
+        panelPaint.setStyle(Paint.Style.FILL);
 
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.WHITE);
@@ -127,9 +131,15 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         //Log.d(TAG, "About to draw thing");
 
         for (Panel panel : panels.values()) {
+            if (panel.isMatched()) {
+                canvas.drawRect(panel.canvas, panelCompletePaint);
 
-            canvas.drawRect(panel.canvas, panelPaint);
-            canvas.drawText(panel.text, panel.canvas.exactCenterX(), panel.canvas.exactCenterY(), textPaint);
+            } else {
+                canvas.drawRect(panel.canvas, panelPaint);
+            }
+
+            canvas.drawText(panel.target + " or " + -panel.target, panel.canvas.exactCenterX(), panel.canvas.exactCenterY() - 70, textPaint);
+            canvas.drawText(panel.getDegreesInString(), panel.canvas.exactCenterX(), panel.canvas.exactCenterY() + 70, textPaint);
         }
     }
 

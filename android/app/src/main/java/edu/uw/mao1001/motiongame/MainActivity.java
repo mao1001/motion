@@ -10,9 +10,12 @@ import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.widget.TextView;
 
 import java.util.Arrays;
+import java.util.Random;
 
 public class MainActivity extends Activity implements SensorEventListener {
 
@@ -24,6 +27,10 @@ public class MainActivity extends Activity implements SensorEventListener {
     private Sensor mSensor;
 
     private DrawingSurfaceView view;
+
+    private int xTarget;
+    private int yTarget;
+    private int zTarget;
 
 
     @Override
@@ -50,6 +57,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         for(Sensor s : mSensorManager.getSensorList(Sensor.TYPE_ALL))
             Log.i(TAG, s.toString());
 
+        generateRandom();
+
 
         if(mSensor == null) { //we don't have a relevant sensor
             Log.v(TAG, "No sensor");
@@ -63,13 +72,18 @@ public class MainActivity extends Activity implements SensorEventListener {
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
         super.onResume();
     }
+
+    @Override
+    protected void onPause() {
+        //unregister sensor
+        mSensorManager.unregisterListener(this, mSensor);
+        super.onPause();
+    }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
+        //Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
 
-//        txtX.setText(String.format("%.3f",event.values[0]));
-//        txtY.setText(String.format("%.3f",event.values[1]));
-//        txtZ.setText(String.format("%.3f",event.values[2]));
 
         float[] rotationMatrix = new float[16];
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
@@ -77,17 +91,34 @@ public class MainActivity extends Activity implements SensorEventListener {
         float[] orientation = new float[3];
         SensorManager.getOrientation(rotationMatrix, orientation);
 
+        int count = 0;
+
         for (int i = 0; i < 3; i++) {
-            view.panels.get(i).text = String.format("%.3f",Math.toDegrees(orientation[i]))+"\u00B0";
+            Panel temp = view.panels.get(i);
+            temp.rotationDegree = Math.toDegrees(orientation[i]);
+            if (temp.isMatched()) {
+                Log.d("TAG", "Matched! Target: " + temp.target + " Current: " + temp.rotationDegree);
+                count++;
+            }
         }
 
-//        txtX.setText(String.format("%.3f",Math.toDegrees(orientation[1]))+"\u00B0");
-//        txtY.setText(String.format("%.3f",Math.toDegrees(orientation[2]))+"\u00B0");
-//        txtZ.setText(String.format("%.3f",Math.toDegrees(orientation[0]))+"\u00B0");
+        if (count == 3) {
+            mSensorManager.unregisterListener(this, mSensor);
+        }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         //leave blank for now
     }
+
+    public void generateRandom() {
+        Random rand = new Random();
+
+        zTarget = view.panels.get(0).target = rand.nextInt(180);
+        xTarget = view.panels.get(1).target = rand.nextInt(90);
+        yTarget = view.panels.get(2).target = rand.nextInt(180);
+        Log.d(TAG, "Random generated stuff: " + xTarget + "   " + yTarget + "   " + zTarget);
+    }
+
 }
