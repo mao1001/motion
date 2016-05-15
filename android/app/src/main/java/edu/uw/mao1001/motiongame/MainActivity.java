@@ -47,11 +47,6 @@ public class MainActivity extends Activity implements SensorEventListener {
         view = (DrawingSurfaceView)findViewById(R.id.drawingView);
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
-//        //views for easy access
-//        txtX = (TextView)findViewById(R.id.txt_x);
-//        txtY = (TextView)findViewById(R.id.txt_y);
-//        txtZ = (TextView)findViewById(R.id.txt_z);
-
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
@@ -89,7 +84,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        //Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
+        Log.v(TAG, "Raw: "+ Arrays.toString(event.values));
 
 
         float[] rotationMatrix = new float[16];
@@ -114,7 +109,15 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         if (count == required) {
             mSensorManager.unregisterListener(this, mSensor);
+            view.gameFinished = true;
         }
+    }
+
+    public void restart() {
+        Log.d(TAG, "Telling surface to restart");
+        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        generateRandom();
+        view.gameFinished = false;
     }
 
     @Override
@@ -134,37 +137,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
-        mDetector.onTouchEvent(event); //detect flings
-
-        float x = event.getX();
-        float y = event.getY();
-
-        //which finger
-        int pointerIndex = MotionEventCompat.getActionIndex(event); //which finger came down
-        int pointerId = MotionEventCompat.getPointerId(event, pointerIndex); //consistent id
-
-        //handle action
-        int action = MotionEventCompat.getActionMasked(event);
-        switch(action) {
-            case MotionEvent.ACTION_DOWN: //put finger down
-                Log.v(TAG,"First finger down!");
-                return true;
-
-            case MotionEvent.ACTION_POINTER_DOWN: //more fingers down
-                Log.v(TAG,"Another finger down!");
-                return true;
-
-            case MotionEvent.ACTION_POINTER_UP:
-                Log.v(TAG,"Finger up!");
-                return true;
-
-            case MotionEvent.ACTION_UP:
-                Log.v(TAG,"Last finger up!");
-                return true;
-            default :
-                return super.onTouchEvent(event);
-        }
+        mDetector.onTouchEvent(event);
+        return true;
     }
 
     private class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -172,6 +146,9 @@ public class MainActivity extends Activity implements SensorEventListener {
         @Override
         public boolean onDown(MotionEvent e) {
             Log.v(TAG, "On down");
+            if (view.gameFinished) {
+                restart();
+            }
 
             return true; //we're processing this event
         }

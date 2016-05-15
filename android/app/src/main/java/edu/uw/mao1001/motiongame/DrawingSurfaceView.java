@@ -22,14 +22,15 @@ import java.util.HashMap;
 public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "SurfaceView";
+    private static final int PANEL_COUNT = 3;
 
     private SurfaceHolder mHolder;
     private Thread mThread;
     private DrawingRunnable mRunnable;
 
-    public HashMap<Integer, Panel> panels;
+    public boolean gameFinished;
 
-    private static final int PANEL_COUNT = 3;
+    public HashMap<Integer, Panel> panels;
 
 
     private Point screenSize;
@@ -55,6 +56,7 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         mHolder.addCallback(this);
 
         mRunnable = new DrawingRunnable();
+
 //
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -98,16 +100,14 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
             panels.put(i, temp);
         }
-
-
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "Creating new drawing thread");
         mThread = new Thread(mRunnable);
-        mRunnable.setRunning(true); //turn on the runner
-        mThread.start(); //start up the thread when surface is created
+        mRunnable.setRunning(true);
+        mThread.start();
     }
 
     @Override
@@ -131,16 +131,14 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         Log.d(TAG, "Drawing thread shut down");
     }
 
-    public void update() {
-
-    }
-
     public synchronized void render(Canvas canvas) {
         if (canvas == null) return;
 
         canvas.drawColor(Color.rgb(51,10,111)); //purple out the background
 
-        //Log.d(TAG, "About to draw thing");
+        //
+        // Log.d(TAG, "About to draw thing");
+
 
         for (int i = 0; i < PANEL_COUNT; i++) {
             Panel panel = panels.get(i);
@@ -160,8 +158,16 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
             }
         }
-    }
 
+        if (gameFinished) {
+            Paint finishedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            finishedPaint.setColor(Color.BLACK);
+            finishedPaint.setAlpha(200);
+            finishedPaint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(0, 0, screenSize.x, screenSize.y, finishedPaint);
+            canvas.drawText("Tap anywhere to play again", screenSize.x / 2, screenSize.y / 2, textPaint);
+        }
+    }
 
     /**
      * An inner class representing a runnable that does the drawing. Animation timing could go in here.
@@ -183,7 +189,6 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
                 try {
                     canvas = mHolder.lockCanvas(); //grab the current canvas
                     synchronized (mHolder) {
-                        update(); //update the game
                         render(canvas); //redraw the screen
                     }
                 }
