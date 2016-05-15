@@ -31,6 +31,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     private DrawingSurfaceView view;
     private GestureDetectorCompat mDetector;
 
+    private static final int PANEL_COUNT = 3;
+
 
     private int xTarget;
     private int yTarget;
@@ -97,17 +99,20 @@ public class MainActivity extends Activity implements SensorEventListener {
         SensorManager.getOrientation(rotationMatrix, orientation);
 
         int count = 0;
+        int required = PANEL_COUNT;
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < PANEL_COUNT; i++) {
             Panel temp = view.panels.get(i);
             temp.rotationDegree = Math.toDegrees(orientation[i]);
-            if (temp.isMatched()) {
+            if (temp.isMatched() && temp.enabled) {
                 //Log.d("TAG", "Matched! Target: " + temp.target + " Current: " + temp.rotationDegree);
                 count++;
+            } else if (!temp.enabled) {
+                required--;
             }
         }
 
-        if (count == 3) {
+        if (count == required) {
             mSensorManager.unregisterListener(this, mSensor);
         }
     }
@@ -176,7 +181,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
             //fling!
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < PANEL_COUNT; i++) {
                 Panel temp = view.panels.get(i);
                 if (temp.canvas.contains(Math.round(e1.getX()), Math.round(e1.getY()))) {
                     Log.v(TAG, "Location is in box #" + (i + 1));

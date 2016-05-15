@@ -29,6 +29,9 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
     public HashMap<Integer, Panel> panels;
 
+    private static final int PANEL_COUNT = 3;
+
+
     private Point screenSize;
 
     private Paint panelPaint;
@@ -68,8 +71,8 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         panelPaint.setStyle(Paint.Style.FILL);
 
         panelDisabledPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        panelCompletePaint.setColor(Color.GRAY);
-        panelCompletePaint.setStyle(Paint.Style.FILL);
+        panelDisabledPaint.setColor(Color.GRAY);
+        panelDisabledPaint.setStyle(Paint.Style.FILL);
 
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.WHITE);
@@ -83,14 +86,13 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
         panels = new HashMap<>();
 
-        int panelAmount = 3;
         int width = screenSize.x;
         int height = screenSize.y;
-        for (int i = 0; i < panelAmount; i++) {
-            int left = (width / panelAmount) * i;
+        for (int i = 0; i < PANEL_COUNT; i++) {
+            int left = (width / PANEL_COUNT) * i;
             int top = 0;
             int bottom = height;
-            int right = (width / panelAmount) * (i + 1);
+            int right = (width / PANEL_COUNT) * (i + 1);
 
             Panel temp = new Panel(new Rect(left, top, right, bottom));
 
@@ -140,7 +142,7 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
         //Log.d(TAG, "About to draw thing");
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < PANEL_COUNT; i++) {
             Panel panel = panels.get(i);
             if (panel.enabled) {
                 if (panel.isMatched()) {
